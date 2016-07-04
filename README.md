@@ -179,3 +179,158 @@ This is almost the same procedure as you did with $ItemViewCategoriesList. Just 
 ```
 
 Well done, that's it. Now we can got setup the checkout-proccess.
+## 2. $PageDesignCheckout
+Allright, this is getting a little bit more tricky. But if you want to track the checkout-proccess and if you want to see how your visitors interact, this is really important.
+
+1. Paste your js-Tracking snippet with some additional plugins inside your `<head>`-Tag like this:
+```
+<!-- ga -->
+<script type="text/javascript">
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	
+	// ga init
+	ga('create', 'UA-54808614-1', 'auto');
+	
+	// needed plugins
+	ga('require', 'linkid');
+    ga('require', 'ec');
+    ga('set', 'forceSSL', true);
+	ga('set', 'anonymizeIp', true);
+	ga('set', '&cu', 'EUR');
+	
+	// recommended
+	ga('require','displayfeatures');
+	
+	// send initial pageview
+	ga('send','pageview');
+</script>
+```
+
+### 2.1 Basket (Warenkorb)
+1. Go to your ***category page!!*** called "Warenkorb" or something like this (not the Container `CheckoutBasketItemsList`)
+2. Add the following snipper somewhere **after** `{% Container_CheckoutBasketItemsList() %}`:
+```
+{# iterator #}
+{% $_bN = 0 %}
+<!-- ga -->
+<script type="text/javascript">
+	{% for $_b in GetCheckoutBasketItemsList() %}
+		ga("ec:addProduct", {
+			"id": "$_b->BasketItemID",
+			"name": '{% trim(strip_tage($_b->BasketItemName[1])) %}',
+			"price": "{% number_format($_b->BasketItemPrice, 2, '.', '') %}",
+			"brand": "$_b->BasketItemProducerName",
+			// this might be not the best solution
+			// but currently there is no other
+			// choose your level by yourself
+			"category": "$_b->BasketItemCategoryName[Level3]",
+			"position": $_bN,
+			"quantity": $_b->BasketItemQuantity
+		});
+		
+		{% $_bN = $_bN + 1 %}
+		
+	    $(document).ready(function(){
+	        $('.rem-$_b->BasketItemID').on('click',function(event) {
+	            ga("ec:addProduct", {
+	                "id": "$_b->BasketItemID",
+	                "name": '{% trim(strip_tage($_b->BasketItemName[1])) %}',
+	                "price": "{% number_format($_b->BasketItemPrice, 2, '.', '') %}",
+	                "brand": "$Producer",
+	                "category": "$CurrentCategory",
+	                "position": $_bN,
+	                "quantity": $('#quantity-input-$_b->BasketItemID').val()
+	            });
+	            ga("ec:setAction", "remove");
+	            ga("send", "event", "Basket", "click", "Remove from Basket");
+	        });
+	        
+	    });
+	{% endfor %}
+	
+	// send the first step to ga
+	ga("ec:setAction", "checkout", {
+		"step": 1
+	});
+	
+	// say ga, there is a new page view
+	ga('send','pageview');
+</script>
+```
+2. Now open the Container `CheckoutBasketItemsList` in the checkout-area of the _Webdesign_
+3. Find the `<a>`-tag or `<button>`-tag (or whatever) with the attriebute `onclick="plenty.BasketService.removeItem($BasketItemID)"`
+4. Add a new class with **rem-$BasketItemID** to this tag to get referenced to the correspondending event, like this:
+```
+<a class="btn btn-primary onlyIcon va-middle rem-$BasketItemID" onclick="plenty.BasketService.removeItem($BasketItemID)"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span><span class="sr-only">Artikel aus Warenkorb löschen</span></a>
+```
+
+### 2.2 Checkout (Kasse)
+1. Add a new `data`-tag to all of your process tabs, for example **Bestelldetails** has to get `data-step="3"`
+```
+{% if GetGlobal("ShowTabDetails") %}
+<li class="small-12 medium-3 large-3 columns">
+	<span id="checkoutTabOrderDetails" role="tab" aria-controls="checkoutPanelOrderDetails" data-step="3">
+		<span class="akf-bubbles3" aria-hidden="true"></span>
+		<span>Bestelldetails</span>
+	</span>
+</li>
+{% endif %}
+```
+...all other steps like this with 4,5,6,7 and so on.
+2. Now find the existing code-snippet and add some anaylitics stuff, so it looks almost (depending on your CMStool-version):
+```
+<script>
+    // it is not possible to get the item cateory at the order-success page
+    // so we have to save it on our own locally in the storage
+    // (in version 6)
+    var categoryArray = [];
+	sessionStorage.removeItem("categories");
+	
+	{% $_bN = 0 %}
+	{% for $_b in GetCheckoutBasketItemsList() %}
+		ga("ec:addProduct", {
+			"id": "$_b->BasketItemID",
+			"name": '{% trim(strip_tags($_b->BasketItemName[1])) %}',
+			"price": "{% number_format($_b->BasketItemPrice, 2, '.', '') %}",
+			"brand": "$_b->BasketItemProducerName",
+			"category": "$_b->BasketItemCategoryName[Level3]",
+			"position": $_bN,
+			"quantity": $_b->BasketItemQuantity
+		});
+		
+		// save category
+		categoryArray[$_bN] = "$_b->BasketItemCategoryName[Level3]"
+		{% $_bN = $_bN + 1 %}
+	{% endfor %}
+	
+	// put the categories into the session storage of the browser
+	sessionStorage["categories"] = JSON.stringify(categoryArray);
+
+	(function($) {
+		$(document).ready(function() {
+			// scroll to top on tab change
+			plenty.NavigatorService.afterChange(function() {
+				$( window ).trigger( 'contentChanged' );
+				var distanceTop = 50;
+				var navigationOffsetTop = $('.checkout-navigation').offset().top
+				if ( navigationOffsetTop - distanceTop < $(document).scrollTop() ) {
+					$('html, body').animate({ scrollTop: ( navigationOffsetTop - distanceTop ) }, 500);
+				}
+				
+				// send the active steps to the analytics funnel
+				ga("ec:setAction", "checkout", {
+					"step": $('[data-plenty-checkout="navigation"] .active > span').attr('data-step')
+				});
+				
+				// and the pageview
+				ga('send','pageview');
+					
+				return true;
+			});
+		});
+	}(jQuery));
+</script>
+```
