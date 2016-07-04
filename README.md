@@ -52,4 +52,130 @@ plentymarkets manual for this: [https://www.plentymarkets.eu/handbuch/payment/pa
 </script>
 ````
 
-#### 1.1 $
+#### 1.1 $ItemViewCategoriesList
+This is getting a little bit more complex. Here you can handle all activities like:
+* addImpression
+* addProduct
+* and setAction
+
+1. Right after the `$FormOpenOrder`-Tag in your for-loop you have to copy & paste this:
+```
+<!-- ga -->
+<script type="text/javascript">
+    {% 
+        # dynamic function naming
+        $_fnName = 'onProductClick'.$ID;
+    %}
+    
+    // send impression/view of products
+    ga('ec:addImpression', {
+        'id': '$ID',
+        // send the clean name without any html-tags
+        'name': '{% trim(strip_tags($Name[1])) %}',
+        'category': '$CurrentCategoryName',
+        'list': 'CategoryView',
+        'position': $RowCount
+    });
+    
+    // create dynamic function for adding products
+    function $_fnName() {
+        ga('ec:addProduct', {
+            'id': '$ID',
+            'name': '{% trim(strip_tags($Name[1])) %}',
+            'category': '$CurrentCategoryName',
+            'brand': '$Producer',
+            'position': $RowCount,
+            'price': '{% number_format($Price, 2, '.', '') %}'
+        });
+        ga('ec:setAction', 'click', {list: 'CategoryView'});
+        
+        // if you click on a product, say it to google
+        ga('send', 'event', 'CategoryView', 'click', 'Results', {
+            hitCallback: function() {
+                document.location = '{% Link_Item($ID) %}';
+            }
+        });
+    }
+    
+    // the document ready stuff (jQuery required)
+    $(document).ready(function() {
+        $('#identifier-$ID .PlentyWebshopButton').on('click',function(event) {
+            ga('ec:addProduct', {
+                'id': '$ID',
+                'name': '{% trim(strip_tags($Name[1])) %}',
+                'category': '$CurrentCategoryName',
+                'brand': '$Producer',
+                'price': '{% number_format($Price, 2, '.', '') %}',
+                // this is for qty = 1, if you have a qty input on your
+                // category list you have to add more functionality
+                'quantity': 1
+            });
+            ga('ec:setAction', 'add');
+            ga('send', 'event', 'CategoryView', 'click', 'Add to Basket');
+        });
+    });
+</script>
+```
+
+2. Now we have to add some functions to the product if the user interacts
+* add a unique identifier to the product-wrapping html-tag, for example:
+`id="identifier-$ID"`
+```
+<!-- item box -->
+<li class="col-xs-12 col-sm-3 col-md-4 col-lg-3 margin-bottom-2 center itemBox tileView onHover action-$ActionId" data-plenty-id="$ID" id="identifier-$ID">
+	$FormOpenOrder
+	...
+	$FormCloseOrder
+</li>
+```
+* Find all `<a>`-Tags with a link to the product page and add a `onclick`-function referenced to our generated function
+```
+<a class="name block" onclick="onProductClick$ID(); return !ga.loaded;" href="{% Link_Item($ID) %}">...</a>
+```
+* At last, find the button for adding your product to the basket and wrap it with an unique ID that it looks similar to this:
+```
+<div class="buttonBox isAddToBasket" id="addToBasket-$ID">
+	<button class="btn btn-primary text-center" data-plenty="click:Basket.addBasketItem(this)">
+		<span class="glyphicon glyphicon-shopping-cart"></span>in den Warenkorb
+	</button>
+</div>
+```
+
+#### 1.2 $ItemViewSearchResultsList
+This is almost the same procedure as you did with $ItemViewCategoriesList. Just change your reference from **CategoryView** to **SearchResult**
+
+#### 1.3 $ItemViewSingleItem
+1. At the very beginning simply add this short snippet:
+```
+<!-- ga -->
+<script type="text/javascript">
+    ga('ec:addProduct', {
+        'id': '$ID',
+        'name': '{% trim(strip_tags($Name[1])) %}',
+        'category': '$CurrentCategoryName',
+        'brand': '$Producer',
+        'price': '{% number_format($Price, 2, '.', '') %}'
+    });
+    ga('ec:setAction', 'ItemView');
+    
+    $(document).ready(function(){
+       
+        $('.toBasketWrapper button').on('click',function(event) {
+            ga("ec:addProduct", {
+                "id": "$ID",
+                'name': '{% trim(strip_tags($Name[1])) %}',
+                "price": "{% number_format($Price, 2, '.', '') %}",
+                "brand": "$Producer",
+                "category": "$CurrentCategoryName",
+                "position": 0,
+                "quantity": $('.quantityInput').val()
+            });
+            ga("ec:setAction", "add");
+            ga("send", "event", "ItemView", "click", "Add to Basket");
+        });
+        
+    });
+</script>
+```
+
+Well done, that's it. Now we can got setup the checkout-proccess.
