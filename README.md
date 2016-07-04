@@ -192,12 +192,12 @@ Allright, this is getting a little bit more tricky. But if you want to track the
 	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 	
 	// ga init
-	ga('create', 'UA-54808614-1', 'auto');
+	ga('create', 'UA-12345678', 'your-shop.de');
 	
 	// needed plugins
 	ga('require', 'linkid');
-    ga('require', 'ec');
-    ga('set', 'forceSSL', true);
+    	ga('require', 'ec');
+    	ga('set', 'forceSSL', true);
 	ga('set', 'anonymizeIp', true);
 	ga('set', '&cu', 'EUR');
 	
