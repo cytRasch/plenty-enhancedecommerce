@@ -147,6 +147,7 @@ This is getting a little bit more complex. Here you can handle all activities li
 ---
 #### 1.2 $ItemViewSearchResultsList
 This is almost the same procedure as you did with $ItemViewCategoriesList. Just change your reference from **CategoryView** to **SearchResult**
+
 ---
 #### 1.3 $ItemViewSingleItem
 1. At the very beginning simply add this short snippet:
