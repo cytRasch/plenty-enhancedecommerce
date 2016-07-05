@@ -375,6 +375,7 @@ To do this, just add this short snippet to the container:
 ### 2.4 Order confirmation (Bestellbestätigung)
 In your categories section go to the container which is setup for your order confirmation and add these lines of code:
 ```html
+{% $_confirm = GetCheckoutOrderConfirmation() %}
 <!-- ga -->
 <script type="text/javascript">
 	// get the categories for each item from session storage
