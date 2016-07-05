@@ -14,13 +14,13 @@ your current active layout.
 
 ## Google Analytics setup
 1. You need to activate the **Enhanced E-Commerce Setting** as you can see in the image below
-![setup enhanced ecommerce](https://raw.githubusercontent.com/cytRasch/plenty-enhancedecommerce/master/ga-01.png)
+![setup enhanced ecommerce](https://raw.githubusercontent.com/cytRasch/plenty-enhancedecommerce/master/img/ga-01.png)
 <br>
 <br>
 <br>
 <br>
 2. After activation you nee to setup your checkout-matching funnels like this
-![setup enhanced ecommerce](https://raw.githubusercontent.com/cytRasch/plenty-enhancedecommerce/master/ga-02.png)
+![setup enhanced ecommerce](https://raw.githubusercontent.com/cytRasch/plenty-enhancedecommerce/master/img/ga-02.png)
 
 **Be careful if you PayPal Plus, for example. In this case you have to split Payment & Shipping**\
 plentymarkets manual for this: [https://www.plentymarkets.eu/handbuch/payment/paypal-plus/](https://www.plentymarkets.eu/handbuch/payment/paypal-plus/)
@@ -417,4 +417,4 @@ In your categories section go to the container which is setup for your order con
 ---
 And that's it. Now you can see how your customers behave and where you have to commit changes to offer a better experience or a better service to reduce breakups.
 
-![track your user behavior in analytics](https://raw.githubusercontent.com/cytRasch/plenty-enhancedecommerce/master/ga-03.png)
+![track your user behavior in analytics](https://raw.githubusercontent.com/cytRasch/plenty-enhancedecommerce/master/img/ga-03.png)
