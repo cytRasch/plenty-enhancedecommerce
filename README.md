@@ -8,7 +8,6 @@ your current active layout.
 
 ### Requirements
   - first, be sure to have UniversalAnalytics (analytics.js) running
-  - you need a running plentymarkets online shop, of course
   - the "new" fully inidvidual checkout is required
   - **No Google Tag Manager**
 
@@ -225,7 +224,7 @@ Allright, this is getting a little bit more tricky. But if you want to track the
 	{% for $_b in GetCheckoutBasketItemsList() %}
 		ga("ec:addProduct", {
 			"id": "$_b->BasketItemID",
-			"name": '{% trim(strip_tage($_b->BasketItemName[1])) %}',
+			"name": '{% trim(strip_tags($_b->BasketItemName[1])) %}',
 			"price": "{% number_format($_b->BasketItemPrice, 2, '.', '') %}",
 			"brand": "$_b->BasketItemProducerName",
 			// this might be not the best solution
@@ -242,7 +241,7 @@ Allright, this is getting a little bit more tricky. But if you want to track the
 	        $('.rem-$_b->BasketItemID').on('click',function(event) {
 	            ga("ec:addProduct", {
 	                "id": "$_b->BasketItemID",
-	                "name": '{% trim(strip_tage($_b->BasketItemName[1])) %}',
+	                "name": '{% trim(strip_tags($_b->BasketItemName[1])) %}',
 	                "price": "{% number_format($_b->BasketItemPrice, 2, '.', '') %}",
 	                "brand": "$Producer",
 	                "category": "$CurrentCategory",
