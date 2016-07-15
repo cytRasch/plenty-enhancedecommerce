@@ -9,6 +9,7 @@ your current active layout.
 ### Requirements
   - first, be sure to have UniversalAnalytics (analytics.js) running
   - the "new" fully inidvidual checkout is required
+  -  you need a running plentymarkets online shop, of course
   - **No Google Tag Manager**
 
 ## Google Analytics setup
